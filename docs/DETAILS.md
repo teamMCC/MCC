@@ -1,0 +1,220 @@
+# MCC 상세 자료
+
+[README](../README.md) 의 보충 자료입니다.
+
+## 1. 프로젝트 구조
+
+```
+MCC/
+├── README.md                    ← 제출 안내 (공모전 요구 항목)
+├── docs/DETAILS.md              ← 이 문서
+├── RUN.md                       ← 실행 방법 (에뮬레이터 설치부터)
+├── apk/                         ← 제출용 APK
+└── app/src/
+    ├── main/
+    │   ├── AndroidManifest.xml      ← automotive feature, 차량·위치 권한, distractionOptimized
+    │   ├── java/com/mcc/app/
+    │   │   ├── MainActivity.kt      ← 화면·버튼. 기어 D→P 감지, 500ms 샘플링, 주행 중 조작 차단
+    │   │   ├── game/
+    │   │   │   ├── Game.kt          ← 게임 규칙: 7슬롯 · 시작 알 · 30km 부화 · 지역 20km · 유전 조건
+    │   │   │   ├── Texts.kt         ← 화면 문장 (확률표, 캐릭터 카드)
+    │   │   │   ├── Collection.kt    ← 도감: 부화 횟수 · 1/3/6회 ★ 단계 · 단계 입히기
+    │   │   │   ├── Room.kt          ← 방 꾸미기: 테마 10 (기본·지역 8·황금) · 소품 9 (4개까지 자유 배치) · 해금 조건
+    │   │   │   ├── Greetings.kt     ← 말풍선 문구 (15자 이하)
+    │   │   │   └── Samples.kt       ← 시연용 샘플 운전자 3명
+    │   │   ├── trait/
+    │   │   │   ├── Traits.kt        ← 형질 20종 · 종족 3종 정의
+    │   │   │   ├── Genetics.kt      ← 확률 규칙 (조정 값은 파일 상단 상수)
+    │   │   │   ├── GeneCode.kt      ← 유전 코드 (C3152-A407X) 변환·오타 감지
+    │   │   │   └── TraitEngine.kt   ← 주행 기록 → 운전 성향 집계
+    │   │   ├── region/Region.kt     ← 8개 지역 · 악세사리 · 오프라인 GPS 지역 판정
+    │   │   ├── vehicle/
+    │   │   │   ├── VehicleRepository.kt ← 차량 신호 읽기 + 신호 가용성 점검
+    │   │   │   ├── LocationTracker.kt   ← GPS → 지역 (좌표는 저장하지 않음)
+    │   │   │   ├── DrivingSession.kt    ← 1회 주행 집계 (거리·급가감속·정차·야간·지역별 거리)
+    │   │   │   ├── DemoDrive.kt         ← 시연용 가상 주행 (실제와 같은 경로로 들어감)
+    │   │   │   └── SimDrive.kt          ← 직접 운전 시뮬레이터 (가속·제동을 물리적으로 계산)
+    │   │   ├── ui/CharacterView.kt  ← 레이어 그림 겹치기 · 숨쉬기 · 프레임 재생 · 메모리 절약 로딩
+    │   │   ├── ui/Recolor.kt        ← ★/★★ 전용 그림이 없을 때 색 바꿔 그리기
+    │   │   ├── vehicle/PleosVehicle.kt ← Pleos 차량 SDK 신호 8개 (읽기 전용)
+    │   │   ├── vehicle/PleosNavi.kt ← Pleos 내비게이션: 길 안내 시작·도착
+    │   │   ├── game/VehicleMoments.kt ← 차량 상태 변화 → 캐릭터가 반응할 '순간'
+    │   │   ├── ui/RainView.kt       ← 방 창문 안에만 내리는 비 (와이퍼 연동)
+    │   │   ├── ui/WindowMask.kt     ← 창문 마스크 그림(room_xxx_window.png)에서 유리 범위 계산
+    │   │   ├── ui/SimPanel.kt       ← '직접 운전해 보기' 화면 (기어·목표 속도·운전 방식·야간·지역·배속)
+    │   │   └── data/LocalStore.kt   ← 차량 내부 저장 (네트워크 없음)
+    │   └── res/
+    │       ├── drawable-nodpi/      ← 캐릭터·방·소품 그림 (팀 자체 제작)
+    │       └── …                    ← 차량 화면 기준 (본문 16sp+, 버튼 64dp+, 다크)
+    └── test/java/com/mcc/app/       ← 단위 테스트 112개
+```
+
+### 설계 원칙
+
+| 원칙 | 코드 위치 |
+|---|---|
+| 많이 타는 사람이 유리하지 않다 — 거리는 "성격"을 정하고 "등급"을 정하지 않는다 | 확률 조건이 `avgKmPerDrive`(1회 평균)를 쓰고 `totalKm`(총합)을 쓰지 않음 |
+| 운이 아니라 운전이 확률을 바꾼다 | `Genetics.STYLE_RULES` — 품는 동안의 운전 성향이 맞는 형질 +30 |
+| 과속은 벌하지 않고 성장을 늦춘다 — 캐릭터에 상처를 입히지 않는다 | `TraitEngine.accumulate()` 의 `× 0.5` 둔화 / 무과속 `× 1.3` 보너스 |
+| 종족에 서열이 없다 | 고양이·시바견·곰 각 1/3, 능력치 차이 없음 |
+| 남의 지역은 남을 통해서만 | 지역 악세사리는 직접 20km 달리거나, 가진 운전자와 유전해야만 얻음 |
+| 주행 중에는 조작하게 하지 않는다 | `MainActivity.setDrivingLock()`, Manifest 의 `distractionOptimized` |
+| 신호 하나가 막혀도 앱은 멈추지 않는다 | 모든 읽기가 `try/catch → null`, GPS 가 없으면 지역만 빠지고 나머지는 정상 |
+| 위치는 저장하지 않는다 | 좌표 → 지역 이름으로 즉시 변환, 저장되는 건 지역별 거리뿐 |
+
+---
+
+## 2. 확률 규칙과 검증
+
+### 2-1. 확률 규칙
+
+| 항목 | 규칙 | 상수 (`Genetics.kt`) |
+|---|---|---|
+| 종족 | 고양이 · 시바견 · 곰 각 **1/3** | `PARENT_SPECIES_BONUS = 0` |
+| 모자·눈·입·의상 | 5종 각 **20%** 에서 출발 | `BASE_WEIGHT = 20` |
+| ↳ 운전 성향 | 알을 품는 동안의 운전이 조건에 맞는 형질 **+30** (20% → 약 38%) | `STYLE_BONUS = 30` |
+| ↳ 부모 형질 | 부모가 가진 형질 **+20** (부모 한쪽마다) | `PARENT_BONUS = 20` |
+| 지역 악세사리 | 한 지역 **20km** 주행 시 획득. 품는 동안 20km 면 반드시 가지고 태어남 | `REGION_UNLOCK_KM = 20` |
+| ↳ 유전 | 부모가 가진 악세사리 **부모 한쪽마다 +10%** | `ACCESSORY_PER_PARENT = 0.10` |
+
+### 2-2. 확률을 직접 올려 보는 방법
+
+형질 확률은 **지금 품고 있는 알**이 생긴 뒤부터의 주행 기록 전체(비율·평균)로 정해집니다. 기어를 **P** 로 바꿀 때마다 홈의 **'지금 부화하면'** 확률표가 다시 계산되고, 조건을 채운 형질 옆에 **▲운전** 이 붙습니다 (20% → 약 38%). 알이 부화하면 기록은 새 알부터 다시 쌓입니다.
+
+| 칸 | 형질 | 조건 (알을 품는 동안) | 앱 안에서 만드는 법 | 에뮬레이터에서 만드는 법 |
+|---|---|---|---|---|
+| 모자 | 번개 모자 | 급가속 km당 0.3회 이상 | 시뮬레이터 `운전: 급하게` · 데모 '급한 운전' | 속도를 0 ↔ 60km/h 로 여러 번 바꿈 |
+| 모자 | 물방울 모자 | 와이퍼 켠 시간 20% 이상 | 데모 '비 오는 날' | 주행 중 Virtual Console `Windshield Wiper → Low` |
+| 모자 | 고글 모자 | 1회 평균 40km 이상 | 시뮬레이터로 한 번에 40km 이상 · 데모 '장거리 고속' | 한 번의 D~P 사이에 40km 이상 |
+| 모자 | 택시기사 모자 | 1회 평균 8km 미만 | 짧게 여러 번 (D → 몇 km → P) · 데모 '출퇴근 도심' | 같음 |
+| 눈 | 슬픈 눈 | 급가속+급제동 km당 0.6회 이상 | 시뮬레이터 `운전: 급하게` | 속도를 0 ↔ 60km/h 로 여러 번 바꿈 |
+| 눈 | 빛나는 눈 | 야간 주행 시간 30% 이상 | 시뮬레이터 `야간 ON` · 데모 '야간 주행' | 야간 모드 명령(아래) 후 주행 |
+| 눈 | 피곤한 눈 | 1회 평균 45분 이상 | 시뮬레이터로 45분 이상 (배속 써도 시간은 실제처럼 계산) | 한 번에 45분 이상 주행 |
+| 눈 | 웃는 눈 | 과속 없는 주행 60% 이상 | 130 을 쓰지 않고 달림 · 데모 '느긋한 운전' | 110km/h 이하 유지 |
+| 입 | 인내의 일자 입 | 정차 시간 40% 이상 | 시뮬레이터에서 기어 D 인 채로 `정지` 를 오래 | 기어 D·속도 0 으로 오래 |
+| 입 | 미소 | 과속 없는 주행 55% 이상 | 위와 같음 | 위와 같음 |
+| 입 | 하품 | 평균 속도 70km/h 이상 | 시뮬레이터 `100` · 데모 '장거리 고속' | 속도 90~110km/h 유지 |
+| 입 | 꾹 다문 입 | 급제동 km당 0.3회 이상 | 시뮬레이터 `운전: 급하게` | 60 → 0km/h 로 여러 번 |
+| 의상 | 장거리형 | 1회 평균 45km 이상 | 한 번에 45km 이상 | 같음 |
+| 의상 | 모범형 | 과속 없는 주행 75% 이상 | 과속 없이 달림 | 110km/h 이하 유지 |
+| 의상 | 우천형 | 와이퍼 켠 시간 25% 이상 | 데모 '비 오는 날' | 주행 중 와이퍼 Low |
+| 의상 | 야간형 | 야간 주행 시간 40% 이상 | 시뮬레이터 `야간 ON` | 야간 모드 명령 후 주행 |
+
+- **기본 형질**(선장 모자·차분한 눈·콧노래·통근형)은 운전 조건이 없고, 부모가 가지고 있을 때만 오릅니다 (부모 한쪽마다 +20).
+- **급가속·급제동**: 0.5초 사이 속도 변화가 +3.0 m/s² 이상이면 급가속, −3.5 m/s² 이하면 급제동입니다.
+- **과속 없는 주행**: 한 번의 주행에서 110km/h 초과가 10초를 넘지 않으면 그 주행은 '과속 없음' 입니다. 비율은 품는 동안의 주행 횟수 기준입니다.
+- **지역 악세사리**는 확률이 아니라 거리입니다. 시뮬레이터 `지역: ▸` 로 지역을 바꾸거나, 에뮬레이터 **⋮ → Location** 에서 그 지역 장소를 고른 뒤 20km 를 달립니다.
+
+**에뮬레이터 명령** (Android Studio 하단 Terminal)
+
+```bash
+# 기어 D(8) / P(4)
+adb shell cmd car_service inject-vhal-event 0x11400400 0 8
+adb shell cmd car_service inject-vhal-event 0x11400400 0 4
+
+# 속도 (단위 m/s = km/h ÷ 3.6) — 60km/h = 16.7, 정지 = 0
+adb shell cmd car_service inject-vhal-event 0x11600207 0 16.7
+adb shell cmd car_service inject-vhal-event 0x11600207 0 0
+
+# 야간 모드 켜기(1) / 끄기(0)
+adb shell cmd car_service inject-vhal-event 0x11200407 0 1
+adb shell cmd car_service inject-vhal-event 0x11200407 0 0
+```
+
+> 속도 막대는 에뮬레이터 **⋮ → Car data** 에서도 바꿀 수 있습니다 (최대 240km/h). 명령으로 넣은 속도가 곧 0 으로 돌아가면 이 막대를 쓰세요.
+> `inject-continuous-events` 는 Pleos Connect 에뮬레이터(user 빌드)에서 권한 오류가 나므로 쓰지 않습니다.
+
+### 2-3. 시뮬레이션 결과
+
+**① 운전이 실제로 결과를 바꾸는가** — 스타일별로 알 2,000개를 품어 부화
+
+| 품는 동안의 운전 | 많이 나온 형질 (기본 20%) |
+|---|---|
+| 출퇴근 도심 | 택시기사 모자 38% · 인내의 일자 입 34% |
+| 장거리 고속 | 하품 40% · 피곤한 눈 39% · 장거리형 37% · 고글 모자 36% |
+| 야간 주행 | 빛나는 눈 39% · 야간형 38% |
+| 급한 운전 | 슬픈 눈 38% · 번개 모자 38% · 꾹 다문 입 36% |
+| 느긋한 운전 | 미소 41% · 모범형 39% · 웃는 눈 38% |
+| 비 오는 날 (와이퍼) | 우천형 37% · 물방울 모자 36% |
+
+**② 다양성** — 운전자 1,000명이 각자 첫 알을 부화하면 **서로 다른 캐릭터 775종**
+(가능 1,875종), 가장 흔한 조합도 **0.4%**. "겹치지 않는 캐릭터"라는 전제가 성립합니다.
+
+**③ 악세사리 유전** — 부모 둘이 악세사리 3종(부산·경상·제주)을 나눠 가졌을 때
+아기가 하나 이상 물려받을 확률 **27.4%** (이론값 27.1%).
+
+### 2-4. 단위 테스트 112개
+
+```
+Android Studio → app/src/test 폴더 우클릭 → Run 'Tests in com.mcc.app'
+```
+
+| 테스트 | 검증 내용 |
+|---|---|
+| `PermissionGateTest` (7) | 첫 실행에 한 번에 묻기 · 이후엔 빠진 속도만 · 위치·에너지 거부해도 핵심 동작 · 대략 위치로 충분 · 두 번 거부 뒤 설정 안내 · 설정 탭 권한 목록 · 선택 권한 다시 켜기 |
+| `DecorTouchTest` (3) | 캐릭터 뒤 소품 잡기 — 소품의 그려진 곳만 소품으로 판정 · 투명한 모서리 제외 · 손가락 여유 |
+| `EggHatchTest` (4) | 누를 때마다 금이 늘고 3번째에 터짐 · 금은 알 그림 안 · 그림의 투명 여백 제외 · 정확한 진행도 문장(다 안 찼으면 100%·30.0km 로 안 보임) |
+| `GeneticsTest` (14) | 종족 1/3 · 형질 20% · 확률 합 = 1 · 운전 가산 16종 전부 도달 가능 · 기본 형질 4종은 가산 안 됨 · 와이퍼 켠 시간 → 물방울 모자·우천형 · 부모 가산 · 악세사리 10% · 3만 회 뽑기 빈도 |
+| `GeneCodeTest` (7) | 왕복 변환 3,000건 · **한 글자 오타 9만여 건 전부 감지** · 소문자·대시 생략·O/0 혼동 허용 |
+| `RegionTest` (10) | 8개 지역 실제 장소 26곳 판정 · 해외(에뮬레이터 기본 위치) → 지역 없음 |
+| `GameRulesTest` (16) | 시작 알 · 기본 알 · 30km 채우면 저절로 안 깨지고 눌러서 부화 · 20km 악세사리 1회만 · 대표만 지역 거리 · 7슬롯 · 유전 조건 · 놓아주기 · 자리 없을 때 부화 대기 · 알 품는 동안 기존 캐릭터 외형 고정 |
+| `DrivingSessionTest` (4) | 거리 적분 · 지역 경계 통과 시 거리 분할 · 5초 추월은 무과속 인정 |
+| `FrameSequenceTest` (3) | 프레임 그림 왕복 재생 순서 · 0.125초 간격 |
+| `SimDriveTest` (6) | 60km/h 30분 ≈ 30km · 급하게 모드 급가감속 발생 · 야간·과속 기록 · 배속 바꿔도 결과 동일 · 시뮬 주행으로 실제 부화 |
+| `CollectionTest` (9) | 도감 31칸 · 부화 때 파츠별 +1 · 1/3/6회 단계 · 열린 단계만 입히기 · 놓아줘도 기록 유지 · 옛 저장에서 도감 채우기 · **도감이 부화 확률을 바꾸지 않음** |
+| `VehicleSignalsTest` (11) | 착석 값 뒤집기(에뮬레이터 확인) · 연료 % 계산(표준 FUEL_LEVEL) · 처음 받은 값은 기준만 · 문·동승자·창문·충전구 전환 1회 반응 · 연료 15% 이하/주유 · 배터리·연료 따로 기억 · 모든 순간에 대사 · 주행거리계 보정(짧거나 크게 다르면 무시) · 방향지시등·도착 횟수 |
+| `RoomAndGreetingTest` (14) | 누른 자리 → 그림 픽셀 좌표(투명한 곳은 누름 아님) · 와이퍼 상태 이름 → 비 판정 · 모든 방에 창문 자리(비 연출) · 창문 마스크 범위 계산 · 스탠드만 불빛 · 방 기본값 · 지역 아이템 → 지역 방 8종 · 주행거리·도감 해금 · 도감 전체 ★ → 은색 트로피 · 소품 4개 제한 · 옮긴 위치가 화면 안으로 · 잠긴 저장값은 기본으로 · 소품 비우기 · 말풍선 전부 15자 이하 · 단계 색 변환(외곽선·흰색·투명 유지, ★★ 금빛) |
+
+> 급가감속 3.0 / −3.5 m/s² 는 텔레매틱스 업계 관행값입니다. 내비 과속 경고 신호를
+> 연결하기 전까지는 110km/h 초과를 과속으로 봅니다. 실차 데이터가 나오면
+> `DrivingSession.kt`·`MainActivity.kt` 의 상수만 조정하면 됩니다.
+
+---
+
+## 3. Pleos 가이드라인 준수
+
+| Pleos 문서 | 요구 | MCC |
+|---|---|---|
+| [개발 환경 설정](https://document.pleos.ai/docs/connect/guide/getting-started/application-development/setup-connect-sdk-emulator) | minSdk 28 이상, Gradle 8.0 이상, Pleos Connect 에뮬레이터 v2.1.0 (API 34) | minSdk 28, Gradle 8.13, API 34 |
+| [SDK API 정책](https://document.pleos.ai/docs/pleos-only/vehicle-app-planning-guide/pleos-connect-sdk-api) | 속도·기어 같은 표준 차량 데이터는 AAOS Car API 사용 (표준 우선) | `CarPropertyManager` 로 속도·기어·야간 모드 |
+| [API 호환성](https://document.pleos.ai/docs/pleos-only/vehicle-app-planning-guide/api-compatibility-availability) | 차종 이름이 아니라 지원 여부로 판단 | `getCarPropertyConfig` 로 지원 확인, 없으면 null 로 건너뜀 |
+| [Connect SDK](https://document.pleos.ai/docs/pleos-only/connect-sdk-pleos/) · [심사 기준](https://document.pleos.ai/docs/pleos-only/distribute/app-review-guide/review-functionality-performance-stability) | 필요한 권한만, 승인된 범위 안에서 | 읽기 권한만 선언 (제어 권한 0개), 쓰는 곳은 README 3-5 표 |
+| [주행 규제 정책](https://document.pleos.ai/docs/pleos-only/vehicle-app-planning-guide/driving-restiction-policy) | DO 선언이 없으면 주행 중 사용 불가 | `distractionOptimized` 선언 |
+| [주행 규제 개발 가이드](https://document.pleos.ai/docs/pleos-only/vehicle-app-developer-guide/driving-restriction-development-guide) | `CarUxRestrictionsManager` 리스너로 규제를 받아 스스로 제한 | 규제가 켜지면 본문·버튼·대화상자를 모두 닫고 안내 한 줄만 표시 |
+| [주행 안전 설계](https://document.pleos.ai/docs/pleos-only/vehicle-app-planning-guide/driver-distraction-guideline) | 주행 중 게임 등 주의 분산 활동 유도 금지, 움직이는 이미지 최소화 | 주행 중에는 캐릭터·알 화면 자체를 숨김 |
+| [보안·개인정보](https://document.pleos.ai/docs/pleos-only/vehicle-app-planning-guide/security-privacy) | 위치 요청 시 목적 안내, 불필요한 개인정보 저장 금지 | 권한 요청 전 목적 안내, 좌표 미저장, 네트워크 없음, 백업 끔 |
+| 심사 기준 — 안정성 | 더미 데이터·임시 콘텐츠 금지 | 시연 도구는 `SHOW_DEMO_TOOLS=false` 로 숨김 (마켓 제출 빌드) |
+| [디자인 가이드 — 텍스트](https://document.pleos.ai/docs/connect/guide/docs-design/foundations/typography) | 짧은 문장, 한 문단 3줄 이하, 중요 정보 5mm↑ · 보조 3mm↑ | 최소 20sp(≈3.2mm), 주행 중 안내·화면 제목 32sp(≈5.1mm), 대화상자 글자도 키움. 안내 문구는 한 줄 40자 이하로 줄임, 말풍선 15자 이하(테스트) |
+| 심사 기준 — 디스플레이 | 안전 영역 준수, 창 크기 변경 시 상태 유지 | `fitsSystemWindows`, `configChanges` 로 재생성 없이 유지 |
+
+> 앱 카테고리는 **라이프스타일**(운전 습관 기반 육성)로 신청할 계획입니다.
+
+---
+
+## 4. 심사 기준 대응
+
+| 심사 기준 | MCC 의 근거 |
+|---|---|
+| **차량특화성** | 부화가 실제 주행거리로만 진행 · 형질 확률을 바꾸는 게 차량 신호(속도·야간 모드·와이퍼 등) · 지역 악세사리는 그 지역을 실제로 달려야 획득 · 문·좌석·실내등 등 차량 신호에 캐릭터와 방이 반응 · 주행 중 조작 차단 |
+| **창의성** | 주행 이력이 일시적 표정이 아니라 **영구적 외형 형질**로 남고, 유전 코드로 **다른 운전자의 캐릭터에게 유전**된다. 남의 지역 악세사리는 그 지역 운전자와 유전해야만 얻는다 |
+| **기술 활용성** | AAOS `CarPropertyManager` · Pleos Vehicle SDK 8개 신호 · NaviHelper · `CarUxRestrictionsManager` 로 주행 중 UI 제어 · 신호 가용성 런타임 점검 · 권한 거부 시에도 핵심 동작 유지 · 단위 테스트 112개 · 메모리 72MB / 주행 중 CPU 0.85% |
+| **사업성** | 차량에서만 성립하는 콘텐츠라 Pleos Connect 탑재 차량의 차별점이 됨 · 지역 악세사리를 지자체·관광지 마케팅과 연계 가능 · 캐릭터 공유를 통한 바이럴 |
+
+## 5. Pleos 개발자 가이드 점검표 (2026-11-13 기준)
+
+| 가이드 | 요구 | MCC |
+|---|---|---|
+| 개발 환경 | minSdk 28↑, Gradle 8↑, Emulator 2.1.0, Cold boot, RAM 4GB | minSdk 28 · AGP 8.13 · Pleos Connect v2.1.0 API 34 |
+| SDK 정책 | 표준(AAOS)에 있는 값은 표준으로 (속도·기어·외기온·연료) | 속도·기어·야간·연료 = 표준, 나머지 = Pleos SDK |
+| SDK 사용 신청 | Vehicle State·NaviHelper 는 '사용 가능' (신청 불필요) | 해당 2개만 사용 |
+| 권한 | 승인 안 된 권한 선언 시 반려, 제어 권한 금지 | Playground 'Vehicle State·NaviHelper' 목록에 있는 읽기 권한만 선언 (READ_WINDSHIELD_WIPERS·CAR_MILEAGE 제거, 목록에 없는 충전구 API 제거) |
+| 주행 규제 | CarUxRestrictions 로 제한, 주행 중 애니메이션 최소화 | 주행 중 메뉴·대화상자 닫음, 캐릭터·비 멈춤 |
+| 게임·미디어 | 주행 시작 시 일시정지·UI 숨김 | 조작 UI 전부 숨김, 멈춘 캐릭터 + 안내 한 줄만 |
+| CCP Back 키 | 첫 화면에서 finish 금지, moveTaskToBack(true) | 적용 |
+| CCP | 사용자 설치 앱은 선택, 터치로 모든 기능 가능해야 함 | ROTARY_SUPPORTED=false 선언 |
+| 글자 | 중요 5mm↑ · 보조 3mm↑, 최소 12sp, 3줄 이하 | 최소 20sp, 주행 안내 32sp |
+| 대비 | 글자·아이콘 4.5:1 이상 | 회색 글자 #765F4F(5.3:1), 버튼 #8A6243(흰 글자 5.4:1) |
+| 성능 | 실행·로딩 10초, 터치 반응 0.25초, 주행 중 CPU 5% 미만, RAM 400MB↓ | 실측 메모리 약 72MB · 주행 중 CPU 약 0.85% (README 3-7). 주행 중·앱이 가려졌을 때·움직일 게 없는 그림은 타이머 정지, 백그라운드 확인 0.5→2초, GPS 2→10초, 그림은 줄여서 읽고 캐시는 힙의 1/8 |
+| 창 | 세로·가로 둘 다 깨지지 않게, 상태 유지 | configChanges 로 상태 유지 (폼 팩터 테스트 필요) |
+| 개인정보 | 쓰기 전에 목적 안내, 동의 버튼만 동의 | 권한 요청 전 목적 안내 (취소 불가, 확인 버튼만) |
+| 제출물 | 아이콘 512×512 · 스크린샷 2~8장 (2560×1380 / 1700×1212 / 840×1212) · 앱 이름 30자↓ | 아이콘 512×512 준비 완료 (`store/`), 스크린샷은 App Market 제출 시 준비 |

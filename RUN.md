@@ -317,7 +317,7 @@ MCC는 **기어가 P에서 빠지면 기록을 시작하고, P로 돌아오면 �
 | `△` | 차량은 지원하지만 읽기 실패 — 권한을 거부했는지 확인 (앱 정보 → 권한) |
 | `X` | 이 차량(에뮬레이터)이 그 신호를 제공하지 않음 — 앱은 그 신호만 건너뜁니다 |
 
-2026-11-13 Pleos Connect v2.1.0 에뮬레이터에서 확인한 결과는 README 3-7 에 캡처와 함께 실었습니다.
+2026-11-13 Pleos Connect v2.1.0 에뮬레이터에서 확인한 결과는 README 3-6 에 캡처와 함께 실었습니다.
 
 > 조향각은 제조사 전용 권한이라 MCC 가 읽지 않습니다. 와이퍼·주행거리는 Pleos 차량 SDK(`CAR_WINDOWS`·`CAR_DRIVE`)로 읽습니다.
 
@@ -345,7 +345,7 @@ adb shell cmd car_service inject-vhal-event 0x11600207 0 16.7
 
 > `inject-continuous-events` 는 Pleos Connect 에뮬레이터(user 빌드)에서 권한 오류(SecurityException)가 나서 쓸 수 없습니다.
 > 넣은 속도가 곧 0 으로 돌아가면 ⋮ → Car data 의 속도 막대를 쓰세요.
-> 형질별로 무엇을 조작하면 확률이 오르는지는 README 7-2 에 표로 정리했습니다.
+> 형질별로 무엇을 조작하면 확률이 오르는지는 docs/DETAILS.md 2-2 에 표로 정리했습니다.
 > 속도는 **m/s** 단위입니다. km/h ÷ 3.6 하세요. (60km/h = 16.7)
 > 쓸 수 있는 명령 전체는 `adb shell cmd car_service` 를 그냥 실행하면 나옵니다.
 > MCC 가 쓰는 신호 ID: 속도 `0x11600207` · 기어 `0x11400400` · 야간 모드 `0x11200407`
