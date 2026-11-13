@@ -1,0 +1,17 @@
+*.iml
+.gradle/
+.kotlin/
+.idea/
+local.properties
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.keystore
+*.jks
+!debug.keystore
+.DS_Store
+
+# apk/ 폴더는 제출물이므로 커밋합니다 (공모전 요구사항)
+!apk/
+!apk/**

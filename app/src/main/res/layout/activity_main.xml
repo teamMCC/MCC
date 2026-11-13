@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#FBF5E9" android:fitsSystemWindows="true">
+
+    <!-- 방 배경. '방 꾸미기'에서 고른 테마 그림을 코드에서 넣습니다 (centerCrop). -->
+    <ImageView android:id="@+id/homeRoom" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:scaleType="centerCrop"
+        android:src="@drawable/room_default" android:importantForAccessibility="no" />
+
+    <!-- 밤 연출: 차가 야간 모드면 방 그림 위에 남색 막을 천천히 덮습니다 (캐릭터·소품은 밝게 유지). -->
+    <View android:id="@+id/homeShade" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:background="#8C1A2246" android:alpha="0"
+        android:importantForAccessibility="no" />
+
+    <!-- 날씨 연출: 와이퍼가 움직이면 방 창문 안에만 비가 내립니다 (RainView 를 코드에서 넣음). -->
+    <FrameLayout android:id="@+id/homeWeather" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:importantForAccessibility="no" />
+
+    <!-- 방 소품 (최대 4개). 방 화면 전체 기준 위치에 놓이고, 길게 눌러 끌어서 옮깁니다 (기어 P 에서만). -->
+    <FrameLayout android:id="@+id/homeDecor" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:clipChildren="false" />
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:padding="12dp">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:id="@+id/homeTitle" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="나의 MCC" android:gravity="center"
+                android:textSize="32sp" android:textStyle="bold" android:textColor="#775A49"
+                android:paddingTop="6dp" />
+            <!-- 오른쪽 위: 밤·비 연출 켜기/끄기. 차량 신호(야간 모드·와이퍼)가 바뀌면 그 상태를 자동으로 따라갑니다. -->
+            <LinearLayout android:id="@+id/homeAmbienceBar" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:layout_gravity="end|center_vertical"
+                android:orientation="horizontal">
+                <TextView android:id="@+id/homeNightToggle" android:layout_width="wrap_content"
+                    android:layout_height="56dp" android:minWidth="150dp" android:gravity="center"
+                    android:paddingStart="18dp" android:paddingEnd="18dp"
+                    android:textSize="20sp" android:textStyle="bold"
+                    android:clickable="true" android:focusable="true" />
+                <TextView android:id="@+id/homeRainToggle" android:layout_width="wrap_content"
+                    android:layout_height="56dp" android:minWidth="150dp" android:gravity="center"
+                    android:layout_marginStart="10dp"
+                    android:paddingStart="18dp" android:paddingEnd="18dp"
+                    android:textSize="20sp" android:textStyle="bold"
+                    android:clickable="true" android:focusable="true" />
+            </LinearLayout>
+        </FrameLayout>
+        <ProgressBar android:id="@+id/homeProgress" style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="220dp" android:layout_height="10dp" android:layout_gravity="center"
+            android:layout_marginTop="8dp" android:max="1000" />
+        <!-- 알의 정확한 부화 진행도: "부화까지 57.6% · 17.3 / 30 km · 남은 12.7 km" -->
+        <TextView android:id="@+id/homeProgressLabel" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_gravity="center"
+            android:layout_marginTop="6dp" android:textSize="20sp" android:textColor="#765F4F"
+            android:visibility="gone" />
+        <!-- 차량 속도 권한이 없을 때만: 앱은 그대로 쓰되 주행 기록이 안 쌓이므로 허용을 안내합니다 (주행 중에는 숨김). -->
+        <TextView android:id="@+id/homePermissionBar" android:layout_width="wrap_content"
+            android:layout_height="56dp" android:layout_gravity="center" android:layout_marginTop="10dp"
+            android:background="@drawable/mcc_panel" android:gravity="center"
+            android:paddingStart="28dp" android:paddingEnd="28dp"
+            android:text="@string/permission_bar" android:textColor="#765F4F"
+            android:textSize="22sp" android:textStyle="bold"
+            android:clickable="true" android:focusable="true" android:visibility="gone" />
+        <FrameLayout android:id="@+id/homeCharacter" android:layout_width="match_parent"
+            android:layout_height="0dp" android:layout_weight="1" />
+        <!-- 손잡이는 접힌 상태에서도 남아 버튼 패널을 다시 열 수 있습니다. -->
+        <LinearLayout android:id="@+id/homeMenuPanel" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/homeMenuToggle"
+                android:layout_width="wrap_content" android:layout_height="56dp"
+                android:minWidth="240dp" android:paddingStart="24dp" android:paddingEnd="24dp"
+                android:layout_gravity="center" android:gravity="center"
+                android:text="⌄  아래로 쓸어 숨기기"
+                android:textSize="20sp" android:textStyle="bold" android:textColor="#775A49"
+                android:background="@drawable/mcc_tile" android:clickable="true" android:focusable="true"
+                android:contentDescription="메인 메뉴 펼쳐짐. 아래로 쓸어 접기" />
+        <LinearLayout android:id="@+id/homeControls" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical"
+            android:background="@drawable/mcc_panel" android:padding="7dp"
+            android:clickable="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <TextView android:id="@+id/homeCollection" style="@style/MccHomeTile"
+                android:drawableTop="@drawable/ic_mcc_collection"
+                android:text="보관함" android:contentDescription="보관함 화면 열기" />
+            <TextView android:id="@+id/homeEgg" style="@style/MccHomeTile"
+                android:drawableTop="@drawable/ic_mcc_egg"
+                android:text="알" android:contentDescription="알 화면 열기" />
+            <TextView android:id="@+id/homeGenetics" style="@style/MccHomeTile"
+                android:drawableTop="@drawable/ic_mcc_genetics"
+                android:text="유전" android:contentDescription="유전 화면 열기" />
+            <TextView android:id="@+id/homeBook" style="@style/MccHomeTile"
+                android:drawableTop="@drawable/ic_mcc_book"
+                android:text="도감" android:contentDescription="도감 화면 열기" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <TextView android:id="@+id/homeRoomDeco" style="@style/MccHomeTile"
+                android:drawableTop="@drawable/ic_mcc_room"
+                android:text="방 꾸미기" android:contentDescription="방 꾸미기 화면 열기" />
+            <TextView android:id="@+id/homeTest" style="@style/MccHomeTile"
+                android:drawableTop="@drawable/ic_mcc_test"
+                android:text="테스트" android:contentDescription="테스트 화면 열기" />
+            <TextView android:id="@+id/homeOdds" style="@style/MccHomeTile"
+                android:drawableTop="@drawable/ic_mcc_odds"
+                android:text="확률표" android:contentDescription="확률표 화면 열기" />
+            <TextView android:id="@+id/homeSettings" style="@style/MccHomeTile"
+                android:drawableTop="@drawable/ic_mcc_settings"
+                android:text="설정" android:contentDescription="설정 화면 열기" />
+            </LinearLayout>
+        </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 메뉴마다 자기 컨테이너만 보이도록 분리. -->
+    <ScrollView android:id="@+id/legacyPanel" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:background="#FBF5E9"
+        android:fillViewport="true" android:visibility="gone">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="22dp">
+            <Button android:id="@+id/homeBack" android:layout_width="wrap_content" android:layout_height="64dp"
+                android:text="← 메인으로" android:background="@drawable/mcc_tile" android:textColor="#745746"
+                android:textAllCaps="false" android:textSize="22sp"
+                android:contentDescription="메인 화면으로 돌아가기" />
+            <TextView android:id="@+id/screenTitle" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="16dp"
+                android:text="보관함" android:textStyle="bold" android:textSize="32sp" android:textColor="#6E5342" />
+            <TextView android:id="@+id/screenSubtitle" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="6dp" android:layout_marginBottom="14dp"
+                android:textSize="20sp" android:textColor="#765F4F" />
+            <LinearLayout android:id="@+id/detailGroup" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical">
+            <LinearLayout android:id="@+id/collectionSection" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView style="@style/MccSection" android:text="내 캐릭터" />
+                <TextView android:id="@+id/txtSlotsHeader" style="@style/MccContentCard"
+                     android:text="보관 중 0 / 5" />
+                <LinearLayout android:id="@+id/slotContainer" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/eggSection" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView style="@style/MccSection" android:text="성장 중인 알" />
+                <FrameLayout android:id="@+id/eggArt" android:layout_width="match_parent"
+                    android:layout_height="210dp" android:background="@drawable/mcc_panel" android:visibility="gone" />
+                <TextView android:id="@+id/txtEgg" style="@style/MccContentCard"
+                     android:text="" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/geneticsSection" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView style="@style/MccSection" android:text="부모 선택" />
+                <TextView android:id="@+id/txtBreed" style="@style/MccContentCard"
+                     android:text="" />
+                <Button android:id="@+id/btnPartner" style="@style/MccActionButton" android:text="다른 운전자 유전 코드 입력" />
+                <Button android:id="@+id/btnBreed" style="@style/MccActionButton" android:text="새 알 만들기" />
+                <TextView style="@style/MccContentCard" android:layout_marginTop="12dp"
+                    android:text="캐릭터 둘을 고르거나, 다른 운전자 코드를 넣어요." />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/testSection" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView style="@style/MccSection" android:text="차량 연결 상태" />
+                <TextView android:id="@+id/txtStatus" style="@style/MccContentCard"
+                     android:text="차량 서비스 연결 중…" />
+                <TextView android:id="@+id/txtSimHeader" style="@style/MccSection" android:layout_marginTop="20dp"
+                    android:text="직접 주행 테스트" />
+                <LinearLayout android:id="@+id/simContainer" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" />
+                <TextView style="@style/MccSection" android:text="주행 기록 / 시스템 로그" />
+                <TextView android:id="@+id/txtSignals" style="@style/MccContentCard"
+                     android:text="" />
+                <Button android:id="@+id/btnDemo" style="@style/MccActionButton" android:text="데모 주행" />
+                <Button android:id="@+id/btnDump" style="@style/MccActionButton" android:text="차량 신호 확인" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/oddsSection" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView style="@style/MccSection" android:text="예상 부화 확률" />
+                <TextView android:id="@+id/txtOdds" style="@style/MccContentCard"
+                     android:text="" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/bookSection" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView android:id="@+id/txtBookSummary" style="@style/MccContentCard" android:text="" />
+                <LinearLayout android:id="@+id/bookContainer" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/roomSection" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <LinearLayout android:id="@+id/roomContainer" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/settingsSection" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <TextView style="@style/MccSection" android:text="권한" />
+                <LinearLayout android:id="@+id/permissionContainer" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" />
+                <TextView style="@style/MccSection" android:layout_marginTop="20dp" android:text="데이터 관리" />
+                <TextView style="@style/MccContentCard"
+                    android:text="기록은 이 차에만 저장돼요.\n초기화는 되돌릴 수 없어요." />
+                <Button android:id="@+id/btnReset" style="@style/MccActionButton" android:text="모든 데이터 초기화" />
+            </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 주행 중: 캐릭터는 그대로 함께 있고(조작 불가), 아래에 한 줄 안내만 표시합니다.
+         Pleos 주행 안전 가이드 — 글은 한 줄, 터치·대화상자 없음, 움직임은 느린 숨쉬기만. -->
+    <TextView android:id="@+id/txtDrivingNotice" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="36dp" android:background="@drawable/mcc_panel"
+        android:paddingStart="32dp" android:paddingEnd="32dp" android:paddingTop="16dp" android:paddingBottom="16dp"
+        android:text="@string/driving_notice"
+        android:textColor="#745B4C" android:textSize="32sp" android:textStyle="bold" android:gravity="center"
+        android:visibility="gone" />
+
+    <!-- 밤에는 화면 전체를 살짝 낮춰 눈부심을 줄입니다. 터치는 그대로 아래로 전달됩니다. -->
+    <View android:id="@+id/nightDim" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:background="#2E000000" android:alpha="0"
+        android:clickable="false" android:focusable="false" android:importantForAccessibility="no" />
+</FrameLayout>
