@@ -208,7 +208,7 @@ android { useLibrary("android.car") }   // 없으면 import android.car.* 전부
 
 ---
 
-### 3-6. 차량 신호 점검 결과 (Pleos Connect v2.1.0 에뮬레이터 · 2026-11-12)
+### 3-6. 차량 신호 점검 결과 (Pleos Connect v2.1.0 에뮬레이터 · 2026-11-13)
 
 앱의 `테스트 → 차량 신호 확인` 화면입니다. Virtual Console 로 신호를 바꿔 가며 확인했습니다.
 
@@ -218,7 +218,7 @@ android { useLibrary("android.car") }   // 없으면 import android.car.* 전부
 |---|---|
 | Android 표준 신호 (기어·속도·야간 모드·연료·주행 규제) | 5개 모두 O |
 | Pleos 차량 SDK 신호 | 지금 쓰는 8개 모두 O (와이퍼·주행거리계·문·동승석·배터리·창문·방향지시등·실내등) |
-| Pleos 내비게이션 SDK | O (연결됨, 길 안내 대기) |
+| Pleos 내비게이션 SDK | △ 연결됨 · 길 안내를 시작하면 출발·도착에 반응 (점검 시점에는 길 안내 대기 중) |
 
 O = 값을 받고 있음 · △ = 연결됐지만 아직 값이 오지 않음 · X = 사용 불가
 
