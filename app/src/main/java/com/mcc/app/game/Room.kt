@@ -24,6 +24,8 @@ sealed class Unlock(val hint: String) {
     class Km(val km: Int) : Unlock("누적 ${km}km 주행")
     class SlotRegistered(val slot: Slot) : Unlock("도감 ${slot.label} 5종 모두 등록")
     class AnySlotTier(val tier: Int) : Unlock("도감 한 줄 모두 " + "★".repeat(tier))
+    /** 도감 31칸 전부: 형질 20종은 이 단계 이상, 종족·지역은 등록 */
+    class AllTier(val tier: Int) : Unlock("도감 전체 " + "★".repeat(tier) + " 달성")
     class RegionGot(val region: Region) : Unlock("${region.label} 지역 아이템 획득")
     object AllRegions : Unlock("지역 아이템 8종 모두 획득")
 }
@@ -112,6 +114,7 @@ object RoomCatalog {
         RoomItem("item_toycar",   RoomSlot.ITEM, "장난감 차", "room_item_toycar",   Unlock.SlotRegistered(Slot.OUTFIT), 0.28f),
         RoomItem("item_suitcase", RoomSlot.ITEM, "여행 가방", "room_item_suitcase", Unlock.AllRegions, 0.38f),
         RoomItem("item_globe",    RoomSlot.ITEM, "지구본",    "room_item_globe",    Unlock.Km(1000), 0.38f),
+        RoomItem("item_trophy_silver", RoomSlot.ITEM, "은색 트로피", "room_item_trophy_silver", Unlock.AllTier(1), 0.38f),
         RoomItem("item_trophy",   RoomSlot.ITEM, "트로피",    "room_item_trophy",   Unlock.AnySlotTier(2), 0.38f),
     )
 
@@ -149,6 +152,7 @@ object RoomRules {
         is Unlock.Km -> state.lifetime.totalKm >= u.km
         is Unlock.SlotRegistered -> CollectionRules.slotComplete(state.collection, u.slot, 0)
         is Unlock.AnySlotTier -> CollectionRules.anySlotComplete(state.collection, u.tier)
+        is Unlock.AllTier -> CollectionRules.allComplete(state.collection, u.tier)
         is Unlock.RegionGot -> hasRegion(state, u.region)
         Unlock.AllRegions -> Region.values().all { hasRegion(state, it) }
     }

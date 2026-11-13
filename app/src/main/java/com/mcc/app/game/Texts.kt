@@ -37,7 +37,7 @@ object Texts {
         return prefix + c.genome.species.label
     }
 
-    /** "시바견 · 젖은 머리결 · 반짝이는 눈 · 미소 · 우천형" */
+    /** "시바견 · 물방울 모자 · 빛나는 눈 · 미소 · 우천형" */
     fun traitsLine(g: Genome): String =
         g.species.label + " · " + Slot.values().joinToString(" · ") { g.traits[it]?.label ?: "-" }
 
@@ -83,7 +83,7 @@ object Texts {
      * 확률표. 알을 품는 동안 실시간으로 바뀝니다.
      *
      *   종족      고양이 33% · 시바견 33% · 곰 33%
-     *   머리      젖은 머리결 38% ▲운전 · 부드러운 웨이브 15% · ...
+     *   모자      물방울 모자 38% ▲운전 · 선장 모자 15% · ...
      *   악세사리  부산 광안리 갈매기 20% ▲유전
      */
     fun oddsBlock(

@@ -224,6 +224,23 @@ class RoomAndGreetingTest {
     }
 
     @Test
+    fun silver_trophy_needs_whole_collection_at_one_star() {
+        val s = GameState()
+        val silver = RoomCatalog.find("item_trophy_silver")!!
+        val gold = RoomCatalog.find("item_trophy")!!
+        // 형질 20종 ★(3회) · 종족·지역 등록(1회), 하나만 빼고
+        CollectionRules.ENTRIES.forEach { s.collection.counts[it.asset] = if (it.tiered) 3 else 1 }
+        val last = CollectionRules.ENTRIES.first { it.tiered }
+        s.collection.counts[last.asset] = 2
+        assertFalse("한 칸이라도 ★ 아니면 잠김", RoomRules.isUnlocked(silver, s))
+        s.collection.counts[last.asset] = 3
+        assertTrue("도감 전체 ★ → 은색 트로피", RoomRules.isUnlocked(silver, s))
+        assertFalse("금색 트로피는 여전히 ★★ 한 줄 필요", RoomRules.isUnlocked(gold, s))
+        s.collection.counts.remove(Region.JEJU.asset)
+        assertFalse("지역 하나 미등록이면 잠김", RoomRules.isUnlocked(silver, s))
+    }
+
+    @Test
     fun demo_unlock_opens_every_room_entry_and_tier() {
         val s = GameState()
         val c = Creature("a", Genome(Species.CAT, Slot.values().associateWith { TraitCatalog.of(it)[0] }, emptySet(), 1))

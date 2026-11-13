@@ -13,7 +13,7 @@ package com.mcc.app.trait
 
 /** 캐릭터를 구성하는 형질 슬롯. 악세사리는 지역(Region)으로 따로 관리합니다. */
 enum class Slot(val label: String) {
-    HAIR("머리"),
+    HAIR("모자"),
     EYE("눈"),
     MOUTH("입"),
     OUTFIT("의상"),
@@ -38,19 +38,19 @@ object TraitCatalog {
     // '(기본)' 표시가 있는 형질은 운전 조건 없이 기본 확률만 가집니다.
 
     val HAIR = listOf(
-        Trait(Slot.HAIR, "wave",  "부드러운 웨이브",  "hair_01_wave",  "기본"),
-        Trait(Slot.HAIR, "spike", "각진 스파이크",    "hair_02_spike", "급가속 km당 0.3회 이상"),
-        Trait(Slot.HAIR, "wet",   "젖은 머리결",      "hair_03_wet",   "와이퍼 켠 시간 20% 이상"),
-        Trait(Slot.HAIR, "wind",  "바람에 날린 머리", "hair_04_wind",  "1회 평균 이동거리 40km 이상"),
-        Trait(Slot.HAIR, "flat",  "눌린 머리",        "hair_05_flat",  "1회 평균 이동거리 8km 미만"),
+        Trait(Slot.HAIR, "wave",  "선장 모자",      "hair_01_wave",  "기본"),
+        Trait(Slot.HAIR, "spike", "번개 모자",      "hair_02_spike", "급가속 km당 0.3회 이상"),
+        Trait(Slot.HAIR, "wet",   "물방울 모자",    "hair_03_wet",   "와이퍼 켠 시간 20% 이상"),
+        Trait(Slot.HAIR, "wind",  "고글 모자",      "hair_04_wind",  "1회 평균 이동거리 40km 이상"),
+        Trait(Slot.HAIR, "flat",  "택시기사 모자",  "hair_05_flat",  "1회 평균 이동거리 8km 미만"),
     )
 
     val EYE = listOf(
-        Trait(Slot.EYE, "calm",   "처진 눈",        "eye_01_calm",   "기본"),
-        Trait(Slot.EYE, "sharp",  "치켜뜬 눈",      "eye_02_sharp",  "급가감속 km당 0.6회 이상"),
-        Trait(Slot.EYE, "shiny",  "반짝이는 눈",    "eye_03_shiny",  "야간 주행 비율 30% 이상"),
-        Trait(Slot.EYE, "sleepy", "졸린 눈",        "eye_04_sleepy", "1회 평균 45분 이상 연속 주행"),
-        Trait(Slot.EYE, "happy",  "웃는 초승달 눈", "eye_05_happy",  "무과속 주행 비율 60% 이상"),
+        Trait(Slot.EYE, "calm",   "차분한 눈",      "eye_01_calm",   "기본"),
+        Trait(Slot.EYE, "sharp",  "슬픈 눈",        "eye_02_sharp",  "급가감속 km당 0.6회 이상"),
+        Trait(Slot.EYE, "shiny",  "빛나는 눈",      "eye_03_shiny",  "야간 주행 비율 30% 이상"),
+        Trait(Slot.EYE, "sleepy", "피곤한 눈",      "eye_04_sleepy", "1회 평균 45분 이상 연속 주행"),
+        Trait(Slot.EYE, "happy",  "웃는 눈",        "eye_05_happy",  "무과속 주행 비율 60% 이상"),
     )
 
     val MOUTH = listOf(

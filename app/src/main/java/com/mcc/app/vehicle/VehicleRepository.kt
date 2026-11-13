@@ -44,7 +44,7 @@ class VehicleRepository(private val context: Context) {
         val TARGET_PROPERTIES: List<Pair<Int, String>> = listOf(
             VehiclePropertyIds.GEAR_SELECTION     to "기어 — 주행 시작·종료 판정",
             VehiclePropertyIds.PERF_VEHICLE_SPEED to "속도 — 거리·급가감속·정차·과속",
-            VehiclePropertyIds.NIGHT_MODE         to "야간 모드 — 반짝이는 눈·야간형·방 밤 연출",
+            VehiclePropertyIds.NIGHT_MODE         to "야간 모드 — 빛나는 눈·야간형·방 밤 연출",
             VehiclePropertyIds.FUEL_LEVEL         to "연료 잔량 — 배고픔·든든함 (내연기관차)",
         )
 

@@ -261,7 +261,7 @@ class GameRulesTest {
     @Test
     fun odds_text_lists_every_slot() {
         val text = Texts.oddsBlock(TraitEngine.Profile(), emptyList(), emptyMap())
-        listOf("종족", "머리", "눈", "입", "의상", "악세사리", "20%").forEach {
+        listOf("종족", "모자", "눈", "입", "의상", "악세사리", "20%").forEach {
             assertTrue("확률표에 '$it'", text.contains(it))
         }
     }

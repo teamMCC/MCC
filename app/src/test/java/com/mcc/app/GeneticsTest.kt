@@ -94,15 +94,15 @@ class GeneticsTest {
 
     @Test
     fun rainy_driving_raises_wet_hair_and_rain_outfit() {
-        // 알을 품는 동안 와이퍼를 켠 시간이 길면 젖은 머리결·우천형이 오릅니다 (20 → 50/130 ≈ 38%).
+        // 알을 품는 동안 와이퍼를 켠 시간이 길면 물방울 모자·우천형이 오릅니다 (20 → 50/130 ≈ 38%).
         val rainy = profile { driveCount = 2; totalKm = 30f; totalSec = 3600; wiperSec = 3600 }
         val wet = Genetics.traitOdds(Slot.HAIR, rainy, emptyList()).first { it.trait.id == "wet" }
-        assertEquals("젖은 머리결 가산", 50.0 / 130, wet.chance.toDouble(), 1e-6)
+        assertEquals("물방울 모자 가산", 50.0 / 130, wet.chance.toDouble(), 1e-6)
         assertTrue(Genetics.Boost.STYLE in wet.boosts)
         val rain = Genetics.traitOdds(Slot.OUTFIT, rainy, emptyList()).first { it.trait.id == "rain" }
         assertEquals("우천형 가산", 50.0 / 130, rain.chance.toDouble(), 1e-6)
 
-        // 경계: 와이퍼 19% → 젖은 머리결 가산 없음, 20% → 가산 / 24% → 우천형 없음, 25% → 가산
+        // 경계: 와이퍼 19% → 물방울 모자 가산 없음, 20% → 가산 / 24% → 우천형 없음, 25% → 가산
         assertFalse(Genetics.styleMatched(Slot.HAIR, "wet", profile { driveCount = 1; totalSec = 1000; wiperSec = 190 }))
         assertTrue(Genetics.styleMatched(Slot.HAIR, "wet", profile { driveCount = 1; totalSec = 1000; wiperSec = 200 }))
         assertFalse(Genetics.styleMatched(Slot.OUTFIT, "rain", profile { driveCount = 1; totalSec = 1000; wiperSec = 240 }))
@@ -153,11 +153,11 @@ class GeneticsTest {
     @Test
     fun parent_traits_are_boosted() {
         val both = Genetics.traitOdds(Slot.HAIR, empty, listOf(genome(hair = "wet"), genome(hair = "wet")))
-        assertEquals("양쪽 부모 젖은 머리", 60.0 / 140, both.first { it.trait.id == "wet" }.chance.toDouble(), 1e-4)
+        assertEquals("양쪽 부모 물방울 모자", 60.0 / 140, both.first { it.trait.id == "wet" }.chance.toDouble(), 1e-4)
 
         val split = Genetics.traitOdds(Slot.HAIR, empty, listOf(genome(hair = "wet"), genome(hair = "spike")))
-        assertEquals("한쪽 부모 젖은 머리", 40.0 / 140, split.first { it.trait.id == "wet" }.chance.toDouble(), 1e-4)
-        assertEquals("한쪽 부모 스파이크", 40.0 / 140, split.first { it.trait.id == "spike" }.chance.toDouble(), 1e-4)
+        assertEquals("한쪽 부모 물방울 모자", 40.0 / 140, split.first { it.trait.id == "wet" }.chance.toDouble(), 1e-4)
+        assertEquals("한쪽 부모 번개 모자", 40.0 / 140, split.first { it.trait.id == "spike" }.chance.toDouble(), 1e-4)
         assertTrue("가산 이유 = 유전", Genetics.Boost.PARENT in split.first { it.trait.id == "wet" }.boosts)
     }
 
@@ -219,9 +219,9 @@ class GeneticsTest {
         Species.values().forEach {
             assertEquals("${it.label} 빈도", 1.0 / 3, (species[it] ?: 0).toDouble() / n, 0.015)
         }
-        // 젖은 머리: 비 가산 +30, 부모 둘 다 웨이브 → wet 50 / (100+30+40) ≈ 0.294
+        // 물방울 모자: 비 가산 +30, 부모 둘 다 선장 모자 → wet 50 / (100+30+40) ≈ 0.294
         val expectedWet = Genetics.traitOdds(Slot.HAIR, rainy, parents).first { it.trait.id == "wet" }.chance
-        assertEquals("젖은 머리 빈도", expectedWet.toDouble(), wet.toDouble() / n, 0.015)
+        assertEquals("물방울 모자 빈도", expectedWet.toDouble(), wet.toDouble() / n, 0.015)
         assertEquals("부산 악세사리 빈도 (부모 한쪽 → 10%)", 0.10, busan.toDouble() / n, 0.01)
     }
 

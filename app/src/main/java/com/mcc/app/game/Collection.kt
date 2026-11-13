@@ -36,7 +36,7 @@ object CollectionRules {
     /** 도감에 나오는 칸 하나. */
     data class Entry(val asset: String, val label: String, val group: String, val tiered: Boolean)
 
-    /** 도감 전체 목록. 종족 3 · 머리 5 · 눈 5 · 입 5 · 의상 5 · 지역 8 = 31칸 */
+    /** 도감 전체 목록. 종족 3 · 모자 5 · 눈 5 · 입 5 · 의상 5 · 지역 8 = 31칸 */
     val ENTRIES: List<Entry> = buildList {
         Species.values().forEach { add(Entry(it.asset, it.label, "종족", tiered = false)) }
         Slot.values().forEach { slot ->
@@ -105,6 +105,10 @@ object CollectionRules {
     /** 형질 슬롯 중 하나라도 해당 단계로 완성됐는지. */
     fun anySlotComplete(c: Collection, atTier: Int): Boolean =
         Slot.values().any { slotComplete(c, it, atTier) }
+
+    /** 도감 전체 완성: 형질 칸은 모두 해당 단계 이상, 종족·지역 칸은 모두 등록 (은색 트로피 조건). */
+    fun allComplete(c: Collection, atTier: Int): Boolean =
+        ENTRIES.all { tier(c, it.asset) >= (if (it.tiered) atTier else 0) }
 
     /** 도감에 등록된 칸 수 / 전체 칸 수 */
     fun registered(c: Collection): Int = ENTRIES.count { count(c, it.asset) > 0 }
