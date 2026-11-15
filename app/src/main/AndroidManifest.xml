@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ★ 차량 전용 앱임을 선언합니다. 이 줄이 있어야 Pleos Connect / AAOS 홈에 나타납니다.
+         required="true" 이므로 휴대폰에는 설치되지 않습니다. 공모전 심사 기준의
+         '차량특화성'을 패키지 수준에서 증명하는 선언입니다. -->
+    <uses-feature
+        android:name="android.hardware.type.automotive"
+        android:required="true" />
+
+    <!-- 차량용 앱은 터치스크린을 전제하지 않습니다 (로터리 노브 장비 대응). -->
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <!-- 차량 신호 권한 — Pleos 가이드 '필요한 권한만 선언' 원칙에 따라 실제로 읽는 것만 둡니다.
+         · 속도·기어는 Pleos SDK API 정책(표준 우선)에 따라 AAOS 표준 Car API로 읽습니다.
+         · 셋 다 normal/dangerous 등급이라 서드파티 앱이 받을 수 있습니다.
+         조향각·전조등처럼 제조사 전용 등급인 신호는 선언도, 호출도 하지 않습니다
+         (승인되지 않은 권한 선언·호출은 Pleos 앱 심사 반려 사유). -->
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
+    <!-- 야간 모드(NIGHT_MODE) 읽기 -->
+    <uses-permission android:name="android.car.permission.CAR_EXTERIOR_ENVIRONMENT" />
+    <!-- 연료 잔량(FUEL_LEVEL)·연료통 크기(INFO_FUEL_CAPACITY) — 표준 우선 정책에 따라 표준 API 로 읽습니다 -->
+    <uses-permission android:name="android.car.permission.CAR_ENERGY" />
+    <uses-permission android:name="android.car.permission.CAR_INFO" />
+    <!-- Pleos 차량 SDK 로 '읽기만' 하는 신호들 (모두 normal 등급, 제어 권한은 선언하지 않음).
+         Pleos Playground 'Vehicle State' 에서 '사용 가능'으로 열린 권한만 씁니다.
+         CAR_DRIVE: 주행거리계 / CAR_WINDOWS: 창문·와이퍼 / CAR_DOORS: 문 / CAR_SEATS: 동승석 착석
+         CAR_ENERGY: 전기차 배터리 / CAR_LIGHTS: 방향지시등·실내등 -->
+    <uses-permission android:name="pleos.car.permission.CAR_DOORS" />
+    <uses-permission android:name="pleos.car.permission.CAR_SEATS" />
+    <uses-permission android:name="pleos.car.permission.CAR_WINDOWS" />
+    <uses-permission android:name="pleos.car.permission.CAR_ENERGY" />
+    <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
+    <uses-permission android:name="pleos.car.permission.CAR_LIGHTS" />
+    <!-- Pleos 내비게이션: 길 안내 '시작·도착' 알림만 받습니다. 목적지 이름·좌표는 읽지 않고,
+         경로를 요청하지도 않으므로 NAVI_ROUTE_SEARCH 는 선언하지 않습니다. -->
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
+
+    <!-- 지역 시그니처 악세사리용. 좌표는 저장하지 않고 '지역 이름'으로만 바꿔 씁니다.
+         Android 12+ 는 FINE 을 COARSE 와 함께 요청해야 하므로 둘 다 선언합니다. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- 네트워크 권한은 선언하지 않습니다.
+         제출 버전은 모든 데이터를 차량 내부에만 저장하므로, 심사 환경에서
+         인터넷 없이도 100% 동일하게 동작합니다. -->
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MCC">
+
+        <!-- CCP(로터리 컨트롤러) 미지원 선언. 사용자 설치 앱은 선택 사항이며, 모든 기능을 터치로 쓸 수 있습니다.
+             (Pleos CCP 개발 가이드) -->
+        <meta-data
+            android:name="com.hmg.rotary.ROTARY_SUPPORTED"
+            android:value="false" />
+
+        <!-- ★ android.car API를 런타임에 연결합니다.
+             required="false" 로 두어 라이브러리가 없는 기기에서도 설치는 되게 합니다. -->
+        <uses-library
+            android:name="android.car"
+            android:required="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|keyboard|keyboardHidden|navigation|uiMode">
+            <!-- configChanges: Pleos 심사 '해상도·창 크기가 바뀌어도 상태 유실 없음'.
+                 멀티 윈도우로 창 크기가 바뀌어도 화면을 새로 만들지 않아
+                 진행 중인 주행 기록과 시뮬레이터 상태가 그대로 유지됩니다. -->
+
+            <!-- 주행 중에도 화면에 머물 수 있다는 선언 (DO).
+                 Pleos 정책: DO 선언이 없는 앱은 주행 중 아예 사용 불가.
+                 선언한 앱은 CarUxRestrictions 를 받아 스스로 제한해야 하므로,
+                 MainActivity 는 주행 규제가 켜지면 본문·버튼·대화상자를 모두 닫습니다. -->
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

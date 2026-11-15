@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 따뜻한 배경, 부드러운 카드, 충분한 대비 및 큰 터치 영역.
+         글자 크기 (Pleos 디자인 가이드: 중요 정보 5mm 이상, 보조 3mm 이상).
+         1sp = 1/160 인치 ≈ 0.159mm 이므로 3mm ≈ 19sp, 5mm ≈ 32sp.
+         → 앱 전체 최소 20sp, 주행 중 안내·화면 제목은 32sp. -->
+    <style name="Theme.MCC" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">#AE8264</item>
+        <item name="colorPrimaryDark">#FBF5E9</item>
+        <item name="colorAccent">#B98260</item>
+        <item name="android:windowBackground">#FBF5E9</item>
+        <item name="android:statusBarColor">#FBF5E9</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <style name="MccSection">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:textColor">#795D4C</item>
+        <item name="android:textSize">26sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="MccHomeTile">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">120dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:background">@drawable/mcc_tile</item>
+        <item name="android:gravity">center</item>
+        <item name="android:drawablePadding">9dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:textColor">#745B4C</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+    <style name="MccContentCard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/mcc_panel</item>
+        <item name="android:padding">20dp</item>
+        <item name="android:textColor">#745B4C</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+    <style name="MccActionButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">80dp</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:background">@drawable/mcc_primary_button</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+</resources>
